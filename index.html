@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Biblioteca da Antiguidade</title>
+<meta name="description" content="Biblioteca pessoal da Antiguidade: obras, estudos e trilhas de leitura.">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%23b3261e%27/%3E%3Cpath d=%27M9 24V9m5 15V9m5 15l4-15M7 25h18%27 stroke=%27white%27 stroke-width=%272.4%27 stroke-linecap=%27round%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE everyday, calm: a reading tool used daily on a phone
+   IDEA a real bookshelf: every book is a spine, coloured by its tradition
+   PICTURE the shelf on the home screen, one row per tradition, read books filled in
+   COLOUR white / near-black night, ink, pompeian red accent, museum pigments for traditions
+   TYPE Marcellus (Roman inscription) for titles + Manrope for text
+   LAYOUT one column, bottom tab bar, full-screen sheet for each book; 720px centred column */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#121112);--ink:light-dark(#1b1a19,#ecebe8);--mut:light-dark(#6d6a66,#a29e98);--line:light-dark(#ebe8e4,#2a2829);--soft:light-dark(#f6f4f1,#1b1a1b);--acc:light-dark(#b3261e,#ef6a5f);--pill:light-dark(#1b1a19,#ecebe8);--pillink:light-dark(#fff,#121112)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font:16px/1.5 Manrope,system-ui,sans-serif;overflow-x:clip;padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+main,.sheet-in{max-width:720px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-left,0px)) 0 max(16px,env(safe-area-inset-right,0px))}
+.top{padding:calc(20px + env(safe-area-inset-top,0px)) 0 8px}
+h1,h2{font-family:Marcellus,Georgia,serif;font-weight:400;letter-spacing:-.01em;line-height:1.08;margin:0;text-wrap:balance}
+h1{font-size:clamp(30px,8vw,40px)}
+h2{font-size:clamp(26px,7vw,34px)}
+h3{font-size:15px;font-weight:700;margin:28px 0 10px}
+.sub,.muted{color:var(--mut);font-size:14px;margin:4px 0 0}
+.figs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:18px 0 6px}
+.fig{padding:10px 0;border-top:2px solid var(--ink)}
+.fig b{display:block;font-family:Marcellus,serif;font-weight:400;font-size:clamp(26px,8vw,36px);line-height:1}
+.fig span{font-size:13px;color:var(--mut)}
+.fig.acc{border-color:var(--acc)}.fig.acc b{color:var(--acc)}
+.seg{display:flex;gap:4px;background:var(--soft);border-radius:12px;padding:4px;margin:14px 0 8px}
+.seg button{flex:1;border:0;background:none;border-radius:9px;padding:9px 6px;font-size:14px;font-weight:600;color:var(--mut);min-height:40px}
+.seg button[aria-pressed=true]{background:var(--bg);color:var(--ink);box-shadow:0 1px 2px rgb(0 0 0/.12)}
+.shelf{margin-top:6px}
+.srow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;width:100%;border:0;background:none;padding:10px 0 0;text-align:left}
+.srow .sl{font-size:14px;font-weight:600}
+.srow .sn{font-size:13px;color:var(--mut);font-variant-numeric:tabular-nums}
+.spines{grid-column:1/-1;display:flex;align-items:flex-end;gap:2px;height:40px;border-bottom:2px solid var(--ink);padding:0 2px}
+.sp{flex:1 1 0;max-width:13px;border-radius:2px 2px 0 0;background:var(--line);height:var(--h)}
+.sp.lido{background:var(--c)}
+.sp.tenho{background:color-mix(in srgb,var(--c) 32%,var(--bg))}
+.sp.lendo{background:color-mix(in srgb,var(--c) 32%,var(--bg));box-shadow:inset 0 0 0 2px var(--acc)}
+.legend{font-size:13px;color:var(--mut);margin:12px 0 0;display:flex;flex-wrap:wrap;gap:6px 14px}
+.legend i{display:inline-block;width:9px;height:14px;border-radius:2px;margin-right:5px;vertical-align:-2px;background:var(--line)}
+.item{display:grid;grid-template-columns:5px minmax(0,1fr) auto;gap:12px;align-items:center;width:100%;border:0;border-bottom:1px solid var(--line);background:none;text-align:left;padding:12px 0;min-height:56px}
+.item .spine{align-self:stretch;border-radius:3px;background:var(--c)}
+.item b{display:block;font-weight:600;font-size:16px;line-height:1.3}
+.meta{display:block;font-size:13px;color:var(--mut);margin-top:2px}
+.badges{display:flex;gap:6px;align-items:center}
+.pill{font-size:12px;font-weight:700;border-radius:99px;padding:3px 9px;white-space:nowrap;border:1.5px solid var(--ink)}
+.pill.Lido{background:var(--pill);color:var(--pillink);border-color:var(--pill)}
+.pill.Tenho{border-color:var(--mut);color:var(--mut)}
+.pill.Lendo{background:var(--acc);border-color:var(--acc);color:#fff}
+.pill.Quero{border-style:dashed}
+.p1{font-style:normal;font-size:12px;font-weight:700;color:var(--acc)}
+.gh{font-size:13px;color:var(--mut);font-weight:600;margin:22px 0 0;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.filters{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0 6px;border-bottom:1px solid var(--line)}
+input[type=search],input[type=text],input[type=password],input[type=date],select,textarea{width:100%;font-size:16px;border:1px solid var(--line);background:var(--soft);border-radius:11px;padding:11px 12px;min-height:44px}
+textarea{min-height:96px;resize:vertical}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:8px 0 2px;scrollbar-width:none}
+.chips button{flex:none;border:1.5px solid var(--line);background:none;border-radius:99px;padding:7px 13px;font-size:14px;font-weight:600;min-height:38px}
+.chips button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:6px}
+.row3 select{font-size:14px;padding:9px 8px}
+.btn{border:0;background:var(--ink);color:var(--bg);border-radius:12px;padding:12px 18px;font-weight:700;min-height:46px}
+.btn.ghost{background:none;color:var(--ink);border:1.5px solid var(--line)}
+.btn.wide{width:100%;margin-top:18px}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:22px}
+.btnrow .btn{flex:1 1 160px}
+.empty{color:var(--mut);font-size:15px;padding:18px 0}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px))}
+nav.tabs button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;font-weight:600;color:var(--mut);padding:6px 0;min-height:50px}
+nav.tabs svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav.tabs button[aria-current=page]{color:var(--acc)}
+.sheet{position:fixed;inset:0;z-index:30;background:var(--bg);overflow-y:auto;transform:translateY(100%);transition:transform .22s ease;visibility:hidden}
+.sheet.on{transform:none;visibility:visible}
+.sheet-in{padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
+.sh-top{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 0 10px;position:sticky;top:0;background:var(--bg);z-index:2}
+.back{border:0;background:none;font-weight:700;font-size:16px;padding:10px 0;min-height:44px}
+.trtag{font-size:13px;font-weight:700;color:var(--c);text-align:right}
+.au{color:var(--mut);margin:6px 0 0}
+.stseg{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin:18px 0 0}
+.stseg button{border:1.5px solid var(--line);background:none;border-radius:10px;padding:10px 2px;font-weight:700;font-size:14px;min-height:46px}
+.stseg button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.stseg button[data-st=Lendo][aria-pressed=true]{background:var(--acc);border-color:var(--acc);color:#fff}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.g2 label,.field{display:block;font-size:13px;font-weight:600;color:var(--mut)}
+.g2 label input,.field input,.field select,.field textarea{margin-top:5px;color:var(--ink)}
+.g2 .full{grid-column:1/-1}
+.stars{display:flex;gap:2px;margin-top:10px;align-items:center}
+.stars span{font-size:13px;font-weight:600;color:var(--mut);margin-right:8px}
+.stars button{border:0;background:none;font-size:24px;line-height:1;padding:8px 4px;color:var(--line);min-width:40px;min-height:44px}
+.stars button.on{color:var(--acc)}
+dl.info{margin:20px 0 0;border-top:1px solid var(--line)}
+dl.info div{display:grid;grid-template-columns:8.5em minmax(0,1fr);gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+dl.info dt{font-size:13px;color:var(--mut);font-weight:600}
+dl.info dd{margin:0;font-size:15px}
+.links button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;padding:10px 0;min-height:44px}
+.links button span{display:block;font-size:13px;color:var(--mut)}
+.note{padding:12px 0;border-bottom:1px solid var(--line)}
+.note blockquote{margin:0;font-family:Marcellus,serif;font-size:18px;line-height:1.4;border-left:3px solid var(--acc);padding-left:12px}
+.note p{margin:0;white-space:pre-wrap}
+.note .nm{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:13px;color:var(--mut);margin-top:6px}
+.note .nm button{border:0;background:none;color:var(--mut);font-size:13px;padding:6px 0;min-height:36px}
+.note .nb{border:0;background:none;padding:0;font-weight:700;font-size:13px;color:var(--ink);text-align:left}
+details.trl{border-bottom:1px solid var(--line);padding:4px 0}
+details.trl summary{list-style:none;cursor:pointer;padding:14px 0 12px}
+details.trl summary::-webkit-details-marker{display:none}
+.trl .tn{display:flex;justify-content:space-between;gap:10px;font-weight:700;font-size:17px}
+.trl .tn span{font-weight:600;font-size:14px;color:var(--mut);font-variant-numeric:tabular-nums;white-space:nowrap}
+.trl .tp{font-size:14px;color:var(--mut);margin:2px 0 8px}
+.bar{height:6px;border-radius:9px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ink);border-radius:9px}
+.nx{font-size:14px;margin-top:8px}.nx b{color:var(--acc)}
+ol.steps{list-style:none;margin:0 0 10px;padding:0;counter-reset:s}
+ol.steps li button{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;border:0;background:none;text-align:left;padding:9px 0;min-height:44px}
+.dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--mut)}
+.dot.Lido{background:var(--ink);border-color:var(--ink)}.dot.Lendo{border-color:var(--acc);background:var(--acc)}.dot.Tenho{border-color:var(--ink)}
+.pub{margin-top:24px}
+.pub h3{display:flex;justify-content:space-between;margin:0;padding-bottom:8px;border-bottom:2px solid var(--ink)}
+.pub h3 span{color:var(--mut);font-weight:600}
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;font-weight:600;z-index:40;max-width:calc(100% - 32px);opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+.syncnote{font-size:13px;color:var(--acc);margin:6px 0 0}
+@media(prefers-reduced-motion:reduce){.sheet,.toast{transition:none}}
+/* landing + login */
+body.out{padding-bottom:0}
+body.out nav.tabs{display:none}
+.hero{padding:calc(28px + env(safe-area-inset-top,0px)) 0 0}
+.hero h1{font-size:clamp(40px,11vw,64px);line-height:1.02}
+.hero .lead{font-size:17px;color:var(--mut);max-width:34em;margin:14px 0 0}
+.wall{margin:26px 0 0}
+.wall .spines{height:64px;border-bottom-width:3px;gap:2px}
+.wall .sp{max-width:none;background:var(--c)}
+.wall .shelfgap{height:12px}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin:26px 0 0}
+.cta .btn{flex:1 1 180px;font-size:17px;min-height:52px}
+.nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:28px 0 0}
+.nums div{border-top:2px solid var(--ink);padding-top:8px}
+.nums b{display:block;font-family:Marcellus,serif;font-weight:400;font-size:clamp(28px,8vw,40px);line-height:1}
+.nums span{font-size:13px;color:var(--mut)}
+.trads{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px;margin-top:6px}
+.trads div{display:flex;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.trads div span:first-child{display:flex;gap:8px;align-items:baseline}
+.trads i{width:8px;height:14px;border-radius:2px;background:var(--c);flex:none;align-self:center}
+.trads em{font-style:normal;color:var(--mut);font-variant-numeric:tabular-nums}
+.tlist{columns:2 16em;column-gap:18px;margin:6px 0 0;padding:0;list-style:none}
+.tlist li{break-inside:avoid;padding:9px 0;border-bottom:1px solid var(--line);font-size:15px}
+.tlist li span{display:block;font-size:13px;color:var(--mut)}
+.foot{color:var(--mut);font-size:13px;margin:36px 0 28px}
+.login{min-height:100svh;display:grid;align-content:center;padding:calc(24px + env(safe-area-inset-top,0px)) 0 40px;max-width:420px;margin:0 auto}
+.login .mini{margin-bottom:26px}
+.login .mini .spines{height:44px}
+.login .mini .sp{max-width:none;background:var(--c)}
+.login label{display:block;font-size:13px;font-weight:600;color:var(--mut);margin-top:22px}
+.pw{position:relative;margin-top:6px}
+.pw input{padding-right:84px}
+.pw button{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;font-size:14px;font-weight:600;color:var(--mut);padding:8px;min-height:40px}
+.err{color:var(--acc);font-size:14px;font-weight:600;min-height:22px;margin:10px 0 0}
+.linkbtn{border:0;background:none;color:var(--mut);font-weight:600;padding:12px 0;min-height:44px}
+.tools{margin-top:30px;border-top:1px solid var(--line);padding-top:6px}
+.tools button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;padding:13px 0;font-weight:600;min-height:48px}
+.tools button span{display:block;font-weight:400;font-size:13px;color:var(--mut)}
+@media(max-width:600px){.trads{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body class="out">
+<main id="main"><p class="empty" style="padding-top:40px">Abrindo a estante…</p></main>
+<nav class="tabs" aria-label="Seções">
+<button data-tab="inicio"><svg viewBox="0 0 24 24"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg>Início</button>
+<button data-tab="estante"><svg viewBox="0 0 24 24"><path d="M5 4v16M9 4v16M13 5l4 15M3 20h18"/></svg>Estante</button>
+<button data-tab="trilhas"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h5a3 3 0 0 0 0-6h-2a3 3 0 0 1 0-6h5"/></svg>Trilhas</button>
+<button data-tab="compras"><svg viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg>Compras</button>
+<button data-tab="notas"><svg viewBox="0 0 24 24"><path d="M7 7h4v4c0 3-2 5-4 6M15 7h4v4c0 3-2 5-4 6"/></svg>Notas</button>
+</nav>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true"><div class="sheet-in" id="sheetIn"></div></div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+{
+const $=s=>document.querySelector(s);
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const PAL=["#b3261e","#c76b29","#c99a10","#6b8e23","#2e7d6b","#2b6cb0","#4b3f9e","#8e3b8a","#a14a5f","#5c6b73","#8a6d3b","#3f7f3f","#1f5f8b","#7a4e2d"];
+const TIPOS={F:"Fontes",E:"Estudos",R:"Recepção"};
+const STS=["Quero","Tenho","Lendo","Lido"];
+const TABS=["inicio","estante","trilhas","compras","notas"];
+const PUBS=["Editora 34","Penguin-Companhia","Companhia das Letras","Autêntica","Perspectiva","Iluminuras","Ateliê","Mnema","Hedra","Edipro","Edusp","Editora Unesp","Unesp","Editora UnB","UnB","Martins Fontes","Zahar","Cultrix","Kotter","7Letras","Vozes","Gulbenkian","Edições 70","Editora UFMG","Editora da Unicamp","Unicamp","Alameda","Annablume","Paz e Terra","Planeta","Record","Contexto","Graal","Difel","Escuta","Relicário","Mauad","Brasiliense","Imago","Paulus","Fiocruz","Presença","Verbo","Humanitas","Coimbra","Uesb","Unifesp","Edusc","Principis","Atual","Cotovia","Segesta","Loeb","Oxford","Cambridge","Harvard","Blackwell","Wiley","Routledge","Johns Hopkins","Princeton"];
+const API="/api/dados";
+let CAT=[],TRILHAS=[],PASS="",syncMsg="";
+const S={est:{},notas:{},extras:{}};
+const V={auth:false,tab:"inicio",shelf:"F",tipo:"F",q:"",st:"",tr:"",pr:"",sort:"ord",nq:"",nt:"",open:null,ntype:"citacao",showpw:false,err:""};
+const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},del:k=>{try{localStorage.removeItem(k)}catch(e){}}};
+try{const {tab,shelf,tipo,st,tr,pr,sort}=JSON.parse(ls.get("ba-view")||"{}");Object.assign(V,JSON.parse(JSON.stringify({tab,shelf,tipo,st,tr,pr,sort})))}catch(e){}
+const keepView=()=>{const {tab,shelf,tipo,st,tr,pr,sort}=V;ls.set("ba-view",JSON.stringify({tab,shelf,tipo,st,tr,pr,sort}))};
+const today=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
+const fmtD=s=>s?s.split("-").reverse().join("/"):"";
+const all=()=>CAT.concat(Object.values(S.extras));
+const byId=id=>all().find(b=>b.id===id);
+const stOf=b=>{const e=S.est[b.id];return e&&("status" in e)?e.status:(b.st0||"")};
+const TRC={};
+const colOf=tr=>{if(!(tr in TRC))TRC[tr]=PAL[Object.keys(TRC).length%PAL.length];return TRC[tr]};
+const toast=m=>{const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("on"),2400)};
+const pill=s=>s?`<span class="pill ${esc(s)}">${esc(s)}</span>`:"";
+const groups=L=>{const m=new Map();L.forEach(b=>{if(!m.has(b.tr))m.set(b.tr,[]);m.get(b.tr).push(b)});return m};
+const plural=(n,a,b)=>n+" "+(n===1?a:b);
+
+/* ---------- servidor ---------- */
+async function api(method,body){
+  const r=await fetch(API,{method,headers:{"content-type":"application/json","x-app-password":PASS},body:body?JSON.stringify(body):undefined});
+  if(r.status===401){const e=new Error("senha");e.code=401;throw e}
+  if(!r.ok){const e=new Error("servidor");e.code=r.status;throw e}
+  return r.json();
+}
+const cache=()=>ls.set("ba-cache",JSON.stringify(S));
+async function pull(){
+  const d=await api("GET");
+  S.est=d.est||{};S.notas=d.notas||{};S.extras=d.extras||{};
+  for(const k in S.notas)S.notas[k].id=k;for(const k in S.extras)S.extras[k].id=k;
+  syncMsg="";cache();render();
+}
+const chains={};
+const queue=(k,fn)=>{chains[k]=(chains[k]||Promise.resolve()).then(fn).then(()=>{if(syncMsg){syncMsg="";render()}}).catch(e=>{
+  if(e.code===401)return logout("Sua senha mudou. Entre de novo.");
+  syncMsg="Sem conexão: a última mudança não foi salva no servidor.";toast("Não foi salvo. Confira a internet.");render()});return chains[k]};
+function put(coll,id,obj){
+  if(obj===null)delete S[coll][id];else S[coll][id]=obj;
+  cache();render();
+  queue(coll+"/"+id,()=>api("POST",{coll,id,value:obj}));
+}
+const setEst=(id,patch)=>put("est",id,Object.assign({},S.est[id]||{},patch));
+const newId=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+
+async function login(p){
+  PASS=p;V.err="";
+  const btn=$("#lg-go");if(btn){btn.disabled=true;btn.textContent="Entrando…"}
+  try{await pull();ls.set("ba-pass",p);V.auth=true;document.body.classList.remove("out");V.tab=TABS.includes(V.tab)?V.tab:"inicio";location.hash=V.tab;render();toast("Bem-vinda de volta")}
+  catch(e){PASS="";V.err=e.code===401?"Senha incorreta.":e.code===500?"O servidor não está configurado (veja o README).":"Não consegui falar com o servidor. Confira a internet.";render();setTimeout(()=>$("#lg-pw")&&$("#lg-pw").focus(),30)}
+}
+function logout(msg){PASS="";ls.del("ba-pass");ls.del("ba-cache");S.est={};S.notas={};S.extras={};V.auth=false;V.open=null;$("#sheet").classList.remove("on");V.err=msg||"";V.tab="login";location.hash="login";render()}
+
+/* ---------- página inicial pública ---------- */
+function wall(L,rowsN,cls){
+  let seed=11;const rnd=()=>(seed=seed*16807%2147483647)/2147483647;
+  const per=Math.ceil(L.length/rowsN),rows=[];
+  for(let i=0;i<L.length;i+=per)rows.push(L.slice(i,i+per));
+  return `<div class="${cls}" aria-hidden="true">${rows.map((r,i)=>`${i?'<div class="shelfgap"></div>':""}<div class="spines">${r.map(b=>`<i class="sp" style="--c:${colOf(b.tr)};--h:${Math.round(55+rnd()*45)}%"></i>`).join("")}</div>`).join("")}</div>`;
+}
+function landing(){
+  const F=CAT.filter(b=>b.tp==="F"),E=CAT.filter(b=>b.tp==="E");
+  const tr=[...groups(F)];
+  return `<section class="hero"><h1>Biblioteca da Antiguidade</h1>
+  <p class="lead">Do Gilgámesh a Boécio: ${F.length} obras antigas, ${E.length} estudos e ${TRILHAS.length} trilhas de leitura, organizados em ${tr.length} tradições.</p>
+  ${wall(F,window.innerWidth<600?4:3,"wall")}
+  <div class="cta"><button class="btn" data-go="login">Entrar</button><button class="btn ghost" data-scroll="#ver-trilhas">Ver as trilhas</button></div>
+  <div class="nums"><div><b>${CAT.length}</b><span>livros</span></div><div><b>${tr.length}</b><span>tradições</span></div><div><b>${TRILHAS.length}</b><span>trilhas</span></div></div></section>
+  <h3>Tradições</h3><div class="trads">${tr.map(([t,i])=>`<div><span><i style="--c:${colOf(t)}"></i>${esc(t)}</span><em>${i.length}</em></div>`).join("")}</div>
+  <h3 id="ver-trilhas">Trilhas de leitura</h3><ul class="tlist">${TRILHAS.map(t=>`<li>${esc(t.nome)}<span>${plural(t.itens.length,"livro","livros")} · ${esc(t.para)}</span></li>`).join("")}</ul>
+  <p class="foot">Uma biblioteca pessoal. As marcações de leitura ficam guardadas só para quem tem a senha.</p>`;
+}
+function loginView(){
+  return `<section class="login"><div class="mini">${wall(CAT.filter(b=>b.tp==="F").slice(0,70),1,"wall")}</div>
+  <h1>Entrar</h1><p class="sub">Digite a senha da sua biblioteca. Este aparelho vai lembrar dela.</p>
+  <form id="lg-form" autocomplete="on"><input type="text" name="username" value="biblioteca" autocomplete="username" hidden>
+  <label for="lg-pw">Senha</label><div class="pw"><input id="lg-pw" type="${V.showpw?"text":"password"}" autocomplete="current-password" required><button type="button" data-showpw>${V.showpw?"Ocultar":"Mostrar"}</button></div>
+  <p class="err" role="alert">${esc(V.err)}</p>
+  <button class="btn wide" id="lg-go" type="submit">Entrar</button></form>
+  <button class="linkbtn" data-go="home">‹ Voltar para a página inicial</button></section>`;
+}
+
+/* ---------- app ---------- */
+function inicio(){
+  const L=all().filter(b=>b.tp===V.shelf),A=all();
+  const c=s=>A.filter(b=>stOf(b)===s).length;
+  const lendo=A.filter(b=>stOf(b)==="Lendo"),espera=A.filter(b=>stOf(b)==="Tenho"&&b.pr==1);
+  let seed=7;const rnd=()=>(seed=seed*16807%2147483647)/2147483647;
+  const rows=[...groups(L)].map(([tr,items])=>{const lid=items.filter(b=>stOf(b)==="Lido").length;
+    return `<button class="srow" data-gotr="${esc(tr)}"><span class="sl">${esc(tr)}</span><span class="sn">${lid} de ${items.length}</span><span class="spines">${items.map(b=>{const s=stOf(b);return `<i class="sp ${s==="Lido"?"lido":s==="Tenho"?"tenho":s==="Lendo"?"lendo":""}" style="--c:${colOf(b.tr)};--h:${Math.round(62+rnd()*38)}%"></i>`}).join("")}</span></button>`}).join("");
+  return `<header class="top"><h1>Biblioteca da Antiguidade</h1><p class="sub">${plural(A.length,"livro","livros")} · ${plural(c("Lido"),"lido","lidos")}</p>${syncMsg?`<p class="syncnote">${esc(syncMsg)}</p>`:""}</header>
+  <section class="figs"><div class="fig acc"><b>${c("Lendo")}</b><span>lendo</span></div><div class="fig"><b>${c("Lido")}</b><span>lidos</span></div><div class="fig"><b>${c("Tenho")}</b><span>na estante</span></div><div class="fig"><b>${c("Quero")}</b><span>quero</span></div></section>
+  <section class="shelf"><div class="seg">${Object.entries(TIPOS).map(([k,n])=>`<button data-shelf="${k}" aria-pressed="${V.shelf===k}">${n}</button>`).join("")}</div>${rows}
+  <p class="legend"><span><i style="background:var(--ink)"></i>lido</span><span><i style="background:color-mix(in srgb,var(--ink) 30%,var(--bg))"></i>tenho</span><span><i style="box-shadow:inset 0 0 0 2px var(--acc)"></i>lendo</span><span><i></i>ainda não</span></p></section>
+  <h3>Lendo agora</h3>${lendo.length?lendo.map(itemRow).join(""):`<p class="empty">Nada em leitura. Abra um livro e marque “Lendo”.</p>`}
+  <h3>Na estante, prioridade 1</h3>${espera.length?espera.map(itemRow).join(""):`<p class="empty">Nenhum livro do núcleo esperando na estante.</p>`}
+  <div class="tools"><button data-add>Adicionar livro<span>Um título que não está no catálogo</span></button>
+  <button data-export>Baixar backup<span>Arquivo .json com todas as marcações e notas</span></button>
+  <button data-import>Importar backup<span>Aceita o .json deste app ou o CSV copiado do app no Claude</span></button>
+  <button data-csv>Copiar tudo (CSV)<span>Para colar numa planilha</span></button>
+  <button data-logout>Sair deste aparelho<span>Apaga a senha e o cache daqui</span></button></div>
+  <input type="file" id="imp" accept=".json,.csv,application/json,text/csv" hidden>`;
+}
+function itemRow(b){const s=stOf(b);return `<button class="item" data-open="${esc(b.id)}" style="--c:${colOf(b.tr)}"><span class="spine"></span><span><b>${esc(b.ti)}</b><span class="meta">${esc(b.au)}${b.dt?" · "+esc(b.dt):""}</span></span><span class="badges">${b.pr==1?'<em class="p1">P1</em>':""}${pill(s)}</span></button>`}
+
+function estanteShell(){
+  return `<header class="top"><h1>Estante</h1></header>
+  <div class="filters"><input id="q" type="search" placeholder="Buscar título, autor, edição" autocomplete="off">
+  <div class="seg" id="tipo">${Object.entries(TIPOS).concat([["","Todos"]]).map(([k,n])=>`<button data-v="${k}">${n}</button>`).join("")}</div>
+  <div class="chips" id="stf">${[["","Todos"],["Quero","Quero"],["Tenho","Tenho"],["Lendo","Lendo"],["Lido","Lido"],["-","Sem status"]].map(([k,n])=>`<button data-v="${k}">${n}</button>`).join("")}</div>
+  <div class="row3"><select id="trf" aria-label="Tradição ou categoria"></select><select id="prf" aria-label="Prioridade"><option value="">Prioridade</option><option value="1">1 · Núcleo</option><option value="2">2 · Essencial</option><option value="3">3 · Aprofundar</option><option value="4">4 · Hiperfoco</option></select><select id="sortf" aria-label="Ordenar"><option value="ord">Por tradição</option><option value="pr">Prioridade</option><option value="ti">Título</option><option value="fim">Lidos recentes</option></select></div></div>
+  <p class="muted" id="cnt"></p><div id="list"></div><button class="btn wide" data-add>Adicionar livro</button>`;
+}
+function bindEstante(){
+  const q=$("#q");q.value=V.q;q.oninput=()=>{V.q=q.value;renderList()};
+  $("#tipo").onclick=e=>{const b=e.target.closest("button");if(!b)return;V.tipo=b.dataset.v;V.tr="";keepView();renderList()};
+  $("#stf").onclick=e=>{const b=e.target.closest("button");if(!b)return;V.st=b.dataset.v;keepView();renderList()};
+  $("#trf").onchange=e=>{V.tr=e.target.value;keepView();renderList()};
+  $("#prf").onchange=e=>{V.pr=e.target.value;keepView();renderList()};
+  $("#sortf").onchange=e=>{V.sort=e.target.value;keepView();renderList()};
+}
+function renderList(){
+  document.querySelectorAll("#tipo button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===V.tipo));
+  document.querySelectorAll("#stf button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===V.st));
+  const base=all().filter(b=>!V.tipo||b.tp===V.tipo),trs=[...new Set(base.map(b=>b.tr))];
+  if(V.tr&&!trs.includes(V.tr))V.tr="";
+  $("#trf").innerHTML=`<option value="">${V.tipo==="E"?"Categoria":"Tradição"}</option>`+trs.map(t=>`<option${t===V.tr?" selected":""}>${esc(t)}</option>`).join("");
+  $("#prf").value=V.pr;$("#sortf").value=V.sort;
+  const q=V.q.trim().toLowerCase();
+  let L=base.filter(b=>{const s=stOf(b);
+    if(V.st==="-"?s:V.st&&s!==V.st)return false;
+    if(V.tr&&b.tr!==V.tr)return false;
+    if(V.pr&&String(b.pr)!==V.pr)return false;
+    if(q&&!`${b.ti} ${b.au} ${b.ed||""} ${b.tr} ${(S.est[b.id]||{}).edicao||""}`.toLowerCase().includes(q))return false;
+    return true});
+  if(V.sort==="pr")L=L.slice().sort((a,b)=>(a.pr||9)-(b.pr||9));
+  if(V.sort==="ti")L=L.slice().sort((a,b)=>a.ti.localeCompare(b.ti,"pt"));
+  if(V.sort==="fim")L=L.filter(b=>stOf(b)==="Lido").sort((a,b)=>((S.est[b.id]||{}).fim||"").localeCompare((S.est[a.id]||{}).fim||""));
+  $("#cnt").textContent=plural(L.length,"livro","livros");
+  $("#list").innerHTML=L.length?(V.sort==="ord"?[...groups(L)].map(([t,items])=>`<p class="gh">${esc(t)}</p>`+items.map(itemRow).join("")).join(""):L.map(itemRow).join("")):`<p class="empty">Nenhum livro com esses filtros.</p>`;
+}
+
+function trilhas(){
+  return `<header class="top"><h1>Trilhas</h1><p class="sub">Sequências de leitura que cruzam as tradições.</p></header>`+TRILHAS.map((t,i)=>{
+    const it=t.itens.map(byId).filter(Boolean),lid=it.filter(b=>stOf(b)==="Lido").length,nx=it.find(b=>stOf(b)!=="Lido");
+    return `<details class="trl"${i===0?" open":""}><summary><div class="tn">${esc(t.nome)}<span>${lid} de ${it.length}</span></div><div class="tp">${esc(t.para)}</div><div class="bar"><i style="width:${Math.round(lid/it.length*100)}%"></i></div>${nx?`<div class="nx">Próximo: <b>${esc(nx.ti)}</b></div>`:`<div class="nx"><b>Trilha concluída</b></div>`}</summary>
+    <ol class="steps">${it.map(b=>{const s=stOf(b);return `<li><button data-open="${esc(b.id)}"><span class="dot ${esc(s)}"></span><span>${esc(b.ti)}<span class="meta">${esc(b.au)}</span></span>${pill(s)}</button></li>`}).join("")}</ol></details>`}).join("");
+}
+
+const pubOf=b=>{const t=((S.est[b.id]||{}).edicao||"")+" "+(b.ed||"");let best=null,pos=1e9;PUBS.forEach(p=>{const i=t.indexOf(p);if(i>=0&&i<pos){pos=i;best=p}});
+  return best==="Unesp"?"Editora Unesp":best==="UnB"?"Editora UnB":best==="Unicamp"?"Editora da Unicamp":best==="Mnema"?"Ateliê":best||"Editora a definir"};
+const comprasGroups=()=>{const m=new Map();all().filter(b=>stOf(b)==="Quero").forEach(b=>{const p=pubOf(b);if(!m.has(p))m.set(p,[]);m.get(p).push(b)});
+  return [...m].sort((a,b)=>a[0]==="Editora a definir"?1:b[0]==="Editora a definir"?-1:b[1].length-a[1].length)};
+function compras(){
+  const G=comprasGroups(),n=G.reduce((s,g)=>s+g[1].length,0);
+  return `<header class="top"><h1>Compras</h1><p class="sub">${plural(n,"livro marcado","livros marcados")} como “Quero”, por editora.</p></header>`+
+  (n?G.map(([p,items])=>`<section class="pub"><h3>${esc(p)}<span>${items.length}</span></h3>${items.map(itemRow).join("")}</section>`).join("")+`<div class="btnrow"><button class="btn" data-copylist>Copiar lista</button></div>`
+  :`<p class="empty">Abra um livro e marque “Quero”: ele aparece aqui, agrupado pela editora da edição sugerida (ou da edição que você anotar).</p>`);
+}
+
+function notasShell(){
+  return `<header class="top"><h1>Notas</h1><p class="sub">Suas anotações e citações de todos os livros.</p></header>
+  <div class="filters"><input id="nq" type="search" placeholder="Buscar nas anotações" autocomplete="off"><div class="chips" id="ntf">${[["","Todas"],["citacao","Citações"],["nota","Notas"]].map(([k,n])=>`<button data-v="${k}">${n}</button>`).join("")}</div></div><div id="nlist"></div>`;
+}
+function bindNotas(){const q=$("#nq");q.value=V.nq;q.oninput=()=>{V.nq=q.value;renderNotas()};$("#ntf").onclick=e=>{const b=e.target.closest("button");if(!b)return;V.nt=b.dataset.v;renderNotas()}}
+function noteHtml(n,showBook){const b=byId(n.livro);return `<div class="note">${n.tipo==="citacao"?`<blockquote>${esc(n.texto)}</blockquote>`:`<p>${esc(n.texto)}</p>`}<div class="nm"><span>${showBook&&b?`<button class="nb" data-open="${esc(b.id)}">${esc(b.ti)}</button> · `:""}${esc(n.ref||"")}${n.ref?" · ":""}${fmtD(n.criado)}</span><button data-delnote="${esc(n.id)}">Apagar</button></div></div>`}
+function renderNotas(){
+  document.querySelectorAll("#ntf button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===V.nt));
+  const q=V.nq.trim().toLowerCase();
+  const L=Object.values(S.notas).filter(n=>(!V.nt||n.tipo===V.nt)&&(!q||`${n.texto} ${n.ref} ${(byId(n.livro)||{}).ti||""}`.toLowerCase().includes(q))).sort((a,b)=>(b.ts||0)-(a.ts||0));
+  $("#nlist").innerHTML=L.length?L.map(n=>noteHtml(n,true)).join(""):`<p class="empty">${Object.keys(S.notas).length?"Nada encontrado.":"Nenhuma anotação ainda. Abra um livro e use “Anotações” no fim da página."}</p>`;
+}
+
+/* ---------- ficha do livro ---------- */
+function detail(){
+  if(V.open==="__add")return addForm();
+  const b=byId(V.open);if(!b)return "";
+  const e=S.est[b.id]||{},s=stOf(b),av=e.av||0;
+  const info=[["Edição sugerida",b.ed],["Por que ler",b.why],["Fonte antiga",b.src],[b.tp==="E"?"Nível":"Gênero",b.tp==="E"?b.nv:b.gen],["Língua",b.lg],["Período",b.sub],["Prioridade",b.pr?["","1 · Núcleo","2 · Essencial","3 · Aprofundamento","4 · Hiperfoco"][b.pr]:""],["Indicado por",b.ind],["Situação da edição",b.cf],["Bilíngue",b.bi]].filter(x=>x[1]);
+  const estudos=all().filter(x=>(x.liga||[]).includes(b.id)),sobre=(b.liga||[]).map(byId).filter(Boolean);
+  const trs=TRILHAS.filter(t=>t.itens.includes(b.id));
+  const notas=Object.values(S.notas).filter(n=>n.livro===b.id).sort((a,c)=>(c.ts||0)-(a.ts||0));
+  const link=x=>`<button data-open="${esc(x.id)}">${esc(x.ti)}<span>${esc(x.au)}${stOf(x)?" · "+esc(stOf(x)):""}</span></button>`;
+  return `<div class="sh-top"><button class="back" data-close>‹ Voltar</button><span class="trtag" style="--c:${colOf(b.tr)}">${esc(b.tr)}</span></div>
+  <h2>${esc(b.ti)}</h2><p class="au">${esc(b.au)}${b.dt?" · "+esc(b.dt):""}</p>
+  <div class="stseg">${STS.concat([""]).map(x=>`<button data-st="${x}" aria-pressed="${s===x}">${x||"—"}</button>`).join("")}</div>
+  <div class="g2"><label class="full">Edição que tenho<input type="text" id="d-ed" value="${esc(e.edicao||"")}" placeholder="Tradutor, editora"></label><label>Comecei<input type="date" id="d-ini" value="${esc(e.ini||"")}"></label><label>Terminei<input type="date" id="d-fim" value="${esc(e.fim||"")}"></label></div>
+  <div class="stars"><span>Avaliação</span>${[1,2,3,4,5].map(n=>`<button data-av="${n}" class="${n<=av?"on":""}" aria-label="${n} de 5">★</button>`).join("")}</div>
+  <dl class="info">${info.map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+  ${sobre.length?`<h3>Estuda estas obras</h3><div class="links">${sobre.map(link).join("")}</div>`:""}
+  ${estudos.length?`<h3>Estudos sobre esta obra</h3><div class="links">${estudos.map(link).join("")}</div>`:""}
+  ${trs.length?`<h3>Nas trilhas</h3><p class="muted">${trs.map(t=>esc(t.nome)).join(" · ")}</p>`:""}
+  <h3>Anotações</h3>${notas.map(n=>noteHtml(n,false)).join("")}
+  <div class="seg" id="ntype">${[["citacao","Citação"],["nota","Nota"]].map(([k,n])=>`<button data-nt="${k}" aria-pressed="${V.ntype===k}">${n}</button>`).join("")}</div>
+  <div class="g2"><label class="full">Texto<textarea id="n-txt" placeholder="${V.ntype==="citacao"?"Copie aqui o trecho":"O que você pensou"}"></textarea></label><label class="full">Onde (canto, verso, página)<input type="text" id="n-ref" placeholder="Ex.: Canto I, v. 1–7"></label></div>
+  <button class="btn wide" data-savenote>Salvar anotação</button>
+  ${String(b.id).startsWith("X")?`<button class="btn ghost wide" data-delbook>Remover este livro</button>`:""}`;
+}
+function addForm(){
+  const trs=[...new Set(all().map(b=>b.tr))];
+  return `<div class="sh-top"><button class="back" data-close>‹ Voltar</button></div><h2>Adicionar livro</h2>
+  <div class="g2"><label class="full">Título<input type="text" id="a-ti"></label><label class="full">Autor(a)<input type="text" id="a-au"></label>
+  <label>Tipo<select id="a-tp"><option value="F">Fonte antiga</option><option value="E">Estudo</option><option value="R">Recepção</option></select></label>
+  <label>Prioridade<select id="a-pr"><option value="1">1 · Núcleo</option><option value="2" selected>2 · Essencial</option><option value="3">3 · Aprofundar</option><option value="4">4 · Hiperfoco</option></select></label>
+  <label class="full">Tradição ou categoria<select id="a-tr">${trs.map(t=>`<option>${esc(t)}</option>`).join("")}</select></label>
+  <label>Data<input type="text" id="a-dt" placeholder="séc. V a.C."></label><label>Status<select id="a-st"><option value="Quero">Quero</option><option>Tenho</option><option>Lendo</option><option>Lido</option><option value="">—</option></select></label>
+  <label class="full">Edição<input type="text" id="a-ed" placeholder="Tradutor, editora"></label><label class="full">Por que ler<textarea id="a-why"></textarea></label></div>
+  <button class="btn wide" data-saveadd>Adicionar à estante</button>`;
+}
+function renderDetail(){$("#sheetIn").innerHTML=detail()}
+function openBook(id){V.open=id;renderDetail();const sh=$("#sheet");sh.classList.add("on");sh.scrollTop=0;setTimeout(()=>{const b=$(".back");if(b)b.focus()},60)}
+function closeBook(){V.open=null;$("#sheet").classList.remove("on")}
+function showText(title,txt){V.open="__txt";$("#sheetIn").innerHTML=`<div class="sh-top"><button class="back" data-close>‹ Voltar</button></div><h2>${esc(title)}</h2><p class="muted">Selecione tudo e copie.</p><textarea style="min-height:60vh">${esc(txt)}</textarea>`;$("#sheet").classList.add("on")}
+
+/* ---------- importar ---------- */
+function parseCSV(t){const rows=[];let row=[],f="",q=false;for(let i=0;i<t.length;i++){const c=t[i];
+  if(q){if(c==='"'){if(t[i+1]==='"'){f+='"';i++}else q=false}else f+=c}
+  else if(c==='"')q=true;else if(c===","){row.push(f);f=""}else if(c==="\n"||c==="\r"){if(c==="\r"&&t[i+1]==="\n")i++;row.push(f);rows.push(row);row=[];f=""}else f+=c}
+  if(f||row.length){row.push(f);rows.push(row)}return rows}
+async function importFile(file){
+  const txt=await file.text();let data;
+  try{
+    if(txt.trim().startsWith("{")){const j=JSON.parse(txt);data={est:j.est||{},notas:j.notas||{},extras:j.extras||{}}}
+    else{const r=parseCSV(txt.trim()),h=r[0].map(x=>x.trim()),ix=k=>h.indexOf(k);if(ix("id")<0||ix("status")<0)throw 0;
+      data={est:{},notas:{},extras:{}};
+      r.slice(1).forEach(c=>{const id=c[ix("id")];if(!id||!byId(id))return;const o={status:c[ix("status")]||""};
+        [["edicao_que_tenho","edicao"],["inicio","ini"],["fim","fim"],["avaliacao","av"]].forEach(([k,n])=>{const v=c[ix(k)];if(v)o[n]=n==="av"?+v:v});
+        if(o.status!==(byId(id).st0||"")||Object.keys(o).length>1)data.est[id]=o})}
+  }catch(e){return toast("Arquivo não reconhecido")}
+  const n=Object.keys(data.est).length+Object.keys(data.notas).length+Object.keys(data.extras).length;
+  if(!n)return toast("Nada para importar nesse arquivo");
+  try{await api("POST",{importar:data});await pull();toast(`Importado: ${plural(n,"item","itens")}`)}catch(e){toast("Não consegui importar. Confira a internet.")}
+}
+
+/* ---------- render ---------- */
+function render(){
+  document.body.classList.toggle("out",!V.auth);
+  document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-current",b.dataset.tab===V.tab?"page":"false"));
+  const m=$("#main");
+  if(!CAT.length)return;
+  if(!V.auth){const v=V.tab==="login"?"login":"home";if(m.dataset.v!==v||v==="login"){const keep=$("#lg-pw")?$("#lg-pw").value:"";m.innerHTML=v==="login"?loginView():landing();m.dataset.v=v;if(v==="login"){$("#lg-pw").value=keep;bindLogin()}}return}
+  if(V.tab==="estante"){if(m.dataset.v!=="estante"){m.innerHTML=estanteShell();m.dataset.v="estante";bindEstante()}renderList()}
+  else if(V.tab==="notas"){if(m.dataset.v!=="notas"){m.innerHTML=notasShell();m.dataset.v="notas";bindNotas()}renderNotas()}
+  else{m.dataset.v=V.tab;m.innerHTML=({inicio,trilhas,compras})[V.tab]()}
+  if(V.open&&V.open!=="__txt"){const a=document.activeElement;if(!$("#sheet").contains(a)||a.tagName==="BUTTON")renderDetail()}
+}
+function bindLogin(){$("#lg-form").onsubmit=e=>{e.preventDefault();const p=$("#lg-pw").value;if(p)login(p)}}
+function go(tab){V.tab=tab;if(V.auth)keepView();if(location.hash!=="#"+tab)location.hash=tab;render();window.scrollTo(0,0)}
+
+/* ---------- eventos ---------- */
+document.addEventListener("click",e=>{
+  const t=e.target.closest("button,[data-open]");if(!t)return;const d=t.dataset;
+  if(d.go){V.err="";if(d.go==="home"){V.tab="inicio";location.hash="";render();return window.scrollTo(0,0)}return go(d.go)}
+  if(d.scroll){const el=$(d.scroll);if(el)el.scrollIntoView({behavior:"smooth"});return}
+  if("showpw" in d){V.showpw=!V.showpw;const i=$("#lg-pw");i.type=V.showpw?"text":"password";t.textContent=V.showpw?"Ocultar":"Mostrar";return}
+  if(!V.auth)return;
+  if(d.tab)return go(d.tab);
+  if(d.open)return openBook(d.open);
+  if("close" in d)return closeBook();
+  if(d.shelf){V.shelf=d.shelf;keepView();return render()}
+  if(d.gotr){Object.assign(V,{tipo:V.shelf,tr:d.gotr,st:"",pr:"",q:"",sort:"ord"});return go("estante")}
+  if("add" in d)return openBook("__add");
+  if("logout" in d){if(!t.dataset.sure){t.dataset.sure="1";t.firstChild.textContent="Toque de novo para sair";return}return logout("")}
+  if("export" in d){const blob=new Blob([JSON.stringify({app:"biblioteca-antiguidade",exportado:new Date().toISOString(),...S},null,1)],{type:"application/json"});
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`biblioteca-backup-${today()}.json`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);return toast("Backup baixado")}
+  if("import" in d){const i=$("#imp");i.value="";i.onchange=()=>{if(i.files[0])importFile(i.files[0])};return i.click()}
+  if(d.st!==undefined&&V.open){const p={status:d.st},e0=S.est[V.open]||{};
+    if(d.st==="Lendo"&&!e0.ini)p.ini=today();if(d.st==="Lido"&&!e0.fim)p.fim=today();
+    setEst(V.open,p);renderDetail();return toast(d.st?"Marcado como "+d.st:"Status removido")}
+  if(d.av){const n=+d.av,cur=(S.est[V.open]||{}).av||0;setEst(V.open,{av:n===cur?0:n});return renderDetail()}
+  if(d.nt){V.ntype=d.nt;const keep=$("#n-txt").value,r=$("#n-ref").value;renderDetail();$("#n-txt").value=keep;$("#n-ref").value=r;return}
+  if("savenote" in d){const txt=$("#n-txt").value.trim();if(!txt)return toast("Escreva o texto primeiro");
+    const id=newId("n");put("notas",id,{id,livro:V.open,tipo:V.ntype,texto:txt,ref:$("#n-ref").value.trim(),criado:today(),ts:Date.now()});renderDetail();return toast("Anotação salva")}
+  if(d.delnote){if(t.dataset.sure){put("notas",d.delnote,null);if(V.open)renderDetail();return toast("Anotação apagada")}t.dataset.sure="1";t.textContent="Toque de novo para apagar";return}
+  if("delbook" in d){if(!t.dataset.sure){t.dataset.sure="1";t.textContent="Toque de novo para remover";return}const id=V.open;closeBook();put("extras",id,null);return toast("Livro removido")}
+  if("saveadd" in d){const ti=$("#a-ti").value.trim();if(!ti)return toast("O título é obrigatório");
+    const id=newId("X"),st=$("#a-st").value;
+    put("extras",id,{id,tp:$("#a-tp").value,ti,au:$("#a-au").value.trim()||"—",tr:$("#a-tr").value,pr:+$("#a-pr").value,dt:$("#a-dt").value.trim(),ed:$("#a-ed").value.trim(),why:$("#a-why").value.trim(),st0:""});
+    if(st)setEst(id,{status:st});openBook(id);return toast("Adicionado à estante")}
+  if("csv" in d||"copylist" in d){
+    let txt;
+    if("csv" in d){const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
+      txt=["id,tipo,tradicao,autor,titulo,status,edicao_que_tenho,inicio,fim,avaliacao"].concat(all().map(b=>{const e=S.est[b.id]||{};return [b.id,TIPOS[b.tp]||b.tp,b.tr,b.au,b.ti,stOf(b),e.edicao,e.ini,e.fim,e.av||""].map(q).join(",")})).join("\n")}
+    else txt=comprasGroups().map(([p,i])=>p+"\n"+i.map(b=>`- ${b.ti} (${b.au})`).join("\n")).join("\n\n");
+    (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast("Copiado")).catch(()=>showText("Copiar",txt));
+  }
+});
+document.addEventListener("change",e=>{
+  if(!V.auth||!V.open||V.open.startsWith("__"))return;const id=e.target.id;
+  const map={"d-ed":"edicao","d-ini":"ini","d-fim":"fim"};
+  if(map[id]){const v=e.target.value.trim();if(((S.est[V.open]||{})[map[id]]||"")!==v){setEst(V.open,{[map[id]]:v});toast("Salvo")}}
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&V.open)closeBook()});
+window.addEventListener("hashchange",()=>{const h=location.hash.slice(1);
+  if(!V.auth){V.tab=h==="login"?"login":"inicio";return render()}
+  if(TABS.includes(h)&&h!==V.tab){V.tab=h;render()}});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&V.auth&&!V.open)pull().catch(e=>{if(e.code===401)logout("Sua senha mudou. Entre de novo.")})});
+
+/* ---------- início ---------- */
+const h0=location.hash.slice(1);
+PASS=ls.get("ba-pass")||"";
+if(PASS){V.auth=true;if(TABS.includes(h0))V.tab=h0;try{Object.assign(S,JSON.parse(ls.get("ba-cache")||"{}"))}catch(e){}}
+else V.tab=h0==="login"?"login":"inicio";
+fetch("catalog.json").then(r=>r.json()).then(j=>{CAT=j.livros;TRILHAS=j.trilhas;CAT.forEach(b=>colOf(b.tr));render();
+  if(V.auth)pull().catch(e=>{if(e.code===401)logout("Sua senha mudou. Entre de novo.");else{syncMsg="Sem conexão: mostrando o que estava salvo neste aparelho.";render()}})})
+  .catch(()=>{$("#main").innerHTML=`<p class="empty">Não foi possível abrir o catálogo. Recarregue a página.</p>`});
+render();
+}
+
+</script>
+</body>
+</html>
