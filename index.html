@@ -19,6 +19,7 @@
 :root{color-scheme:light dark;--bg:light-dark(#ffffff,#121112);--ink:light-dark(#1b1a19,#ecebe8);--mut:light-dark(#6d6a66,#a29e98);--line:light-dark(#ebe8e4,#2a2829);--soft:light-dark(#f6f4f1,#1b1a1b);--acc:light-dark(#b3261e,#ef6a5f);--pill:light-dark(#1b1a19,#ecebe8);--pillink:light-dark(#fff,#121112)}
 :root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
 *{box-sizing:border-box;min-width:0}
+[hidden]{display:none!important}
 html,body{margin:0;background:var(--bg);color:var(--ink)}
 body{font:16px/1.5 Manrope,system-ui,sans-serif;overflow-x:clip;padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -170,6 +171,25 @@ body.out nav.tabs{display:none}
 .tools button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;padding:13px 0;font-weight:600;min-height:48px}
 .tools button span{display:block;font-weight:400;font-size:13px;color:var(--mut)}
 @media(max-width:600px){.trads{grid-template-columns:minmax(0,1fr)}}
+.isbnrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:6px}
+.isbnrow .btn{min-height:44px;padding:10px 16px}
+.scanbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:16px}
+.scanbtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.scanbox{position:relative;border-radius:16px;overflow:hidden;background:#000;margin-top:14px;aspect-ratio:4/3}
+.scanbox video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.scanframe{position:absolute;inset:32% 9%;border:2px solid rgb(255 255 255/.9);border-radius:10px}
+.scanline{position:absolute;left:12%;right:12%;top:50%;height:2px;background:#ef6a5f;box-shadow:0 0 10px #ef6a5f}
+.scanmsg{font-size:14px;color:var(--mut);margin:10px 0 0}
+.found{display:grid;grid-template-columns:64px minmax(0,1fr);gap:14px;align-items:start;margin-top:16px;padding:12px;border:1px solid var(--line);border-radius:14px}
+.found img{width:64px;border-radius:4px;box-shadow:0 1px 3px rgb(0 0 0/.25)}
+.found .nocap{width:64px;height:92px;border-radius:4px;background:var(--soft)}
+.found b{display:block;line-height:1.3}
+.match{margin-top:14px;padding:12px 14px;border-radius:14px;background:var(--soft)}
+.match p{margin:0 0 6px;font-size:14px;font-weight:600}
+.match button{display:block;width:100%;text-align:left;border:0;border-top:1px solid var(--line);background:none;padding:10px 0;min-height:44px}
+.match button span{display:block;font-size:13px;color:var(--mut)}
+.cover{float:right;width:84px;margin:4px 0 10px 14px;border-radius:4px;box-shadow:0 1px 4px rgb(0 0 0/.25)}
+@media(prefers-reduced-motion:no-preference){.scanline{animation:sl 1.6s ease-in-out infinite alternate}@keyframes sl{from{transform:translateY(-34px)}to{transform:translateY(34px)}}}
 </style>
 </head>
 <body class="out">
@@ -370,13 +390,13 @@ function detail(){
   if(V.open==="__add")return addForm();
   const b=byId(V.open);if(!b)return "";
   const e=S.est[b.id]||{},s=stOf(b),av=e.av||0;
-  const info=[["Edição sugerida",b.ed],["Por que ler",b.why],["Fonte antiga",b.src],[b.tp==="E"?"Nível":"Gênero",b.tp==="E"?b.nv:b.gen],["Língua",b.lg],["Período",b.sub],["Prioridade",b.pr?["","1 · Núcleo","2 · Essencial","3 · Aprofundamento","4 · Hiperfoco"][b.pr]:""],["Indicado por",b.ind],["Situação da edição",b.cf],["Bilíngue",b.bi]].filter(x=>x[1]);
+  const info=[["Edição sugerida",b.ed],["Por que ler",b.why],["Fonte antiga",b.src],[b.tp==="E"?"Nível":"Gênero",b.tp==="E"?b.nv:b.gen],["Língua",b.lg],["Período",b.sub],["Prioridade",b.pr?["","1 · Núcleo","2 · Essencial","3 · Aprofundamento","4 · Hiperfoco"][b.pr]:""],["Indicado por",b.ind],["Situação da edição",b.cf],["Bilíngue",b.bi],["ISBN",e.isbn||b.isbn]].filter(x=>x[1]);
   const estudos=all().filter(x=>(x.liga||[]).includes(b.id)),sobre=(b.liga||[]).map(byId).filter(Boolean);
   const trs=TRILHAS.filter(t=>t.itens.includes(b.id));
   const notas=Object.values(S.notas).filter(n=>n.livro===b.id).sort((a,c)=>(c.ts||0)-(a.ts||0));
   const link=x=>`<button data-open="${esc(x.id)}">${esc(x.ti)}<span>${esc(x.au)}${stOf(x)?" · "+esc(stOf(x)):""}</span></button>`;
   return `<div class="sh-top"><button class="back" data-close>‹ Voltar</button><span class="trtag" style="--c:${colOf(b.tr)}">${esc(b.tr)}</span></div>
-  <h2>${esc(b.ti)}</h2><p class="au">${esc(b.au)}${b.dt?" · "+esc(b.dt):""}</p>
+  ${/^https:\/\//.test(b.capa||"")?`<img class="cover" src="${esc(b.capa)}" alt="">`:""}<h2>${esc(b.ti)}</h2><p class="au">${esc(b.au)}${b.dt?" · "+esc(b.dt):""}</p>
   <div class="stseg">${STS.concat([""]).map(x=>`<button data-st="${x}" aria-pressed="${s===x}">${x||"—"}</button>`).join("")}</div>
   <div class="g2"><label class="full">Edição que tenho<input type="text" id="d-ed" value="${esc(e.edicao||"")}" placeholder="Tradutor, editora"></label><label>Comecei<input type="date" id="d-ini" value="${esc(e.ini||"")}"></label><label>Terminei<input type="date" id="d-fim" value="${esc(e.fim||"")}"></label></div>
   <div class="stars"><span>Avaliação</span>${[1,2,3,4,5].map(n=>`<button data-av="${n}" class="${n<=av?"on":""}" aria-label="${n} de 5">★</button>`).join("")}</div>
@@ -391,19 +411,73 @@ function detail(){
   ${String(b.id).startsWith("X")?`<button class="btn ghost wide" data-delbook>Remover este livro</button>`:""}`;
 }
 function addForm(){
-  const trs=[...new Set(all().map(b=>b.tr))];
+  const trs=[...new Set(all().map(b=>b.tr))],d=ADD;
   return `<div class="sh-top"><button class="back" data-close>‹ Voltar</button></div><h2>Adicionar livro</h2>
-  <div class="g2"><label class="full">Título<input type="text" id="a-ti"></label><label class="full">Autor(a)<input type="text" id="a-au"></label>
+  <button class="btn scanbtn" data-scan ${scan?"hidden":""}><svg viewBox="0 0 24 24"><path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M8 8v8M11 8v8M14 8v8M17 8v8"/></svg>Ler código de barras (ISBN)</button>
+  <div id="scan" ${scan?"":"hidden"}><div class="scanbox"><video id="scan-v" playsinline muted autoplay></video><div class="scanframe"></div><div class="scanline"></div></div><p class="scanmsg" id="scan-msg">Aponte para o código de barras atrás do livro.</p><button class="btn ghost wide" data-scanstop>Cancelar leitura</button></div>
+  <label class="field" style="margin-top:16px">ISBN<div class="isbnrow"><input type="text" id="a-isbn" inputmode="numeric" placeholder="978…" value="${esc(d.isbn||"")}"><button class="btn ghost" data-isbnbusca>Buscar</button></div></label>
+  <p class="scanmsg" id="isbn-msg">${esc(d.msg||"")}</p>
+  ${d.ti?`<div class="found">${/^https:\/\//.test(d.capa||"")?`<img src="${esc(d.capa)}" alt="">`:`<span class="nocap"></span>`}<div><b>${esc(d.ti)}</b><span class="meta">${esc(d.au||"")}${d.ed?" · "+esc(d.ed):""}</span></div></div>`:""}
+  ${d.match&&d.match.length?`<div class="match"><p>Já está no catálogo? Toque para marcar como “Tenho”.</p>${d.match.map(id=>{const b=byId(id);return b?`<button data-claim="${esc(b.id)}">${esc(b.ti)}<span>${esc(b.au)} · ${esc(b.tr)}</span></button>`:""}).join("")}</div>`:""}
+  <div class="g2"><label class="full">Título<input type="text" id="a-ti" value="${esc(d.ti||"")}"></label><label class="full">Autor(a)<input type="text" id="a-au" value="${esc(d.au||"")}"></label>
   <label>Tipo<select id="a-tp"><option value="F">Fonte antiga</option><option value="E">Estudo</option><option value="R">Recepção</option></select></label>
   <label>Prioridade<select id="a-pr"><option value="1">1 · Núcleo</option><option value="2" selected>2 · Essencial</option><option value="3">3 · Aprofundar</option><option value="4">4 · Hiperfoco</option></select></label>
   <label class="full">Tradição ou categoria<select id="a-tr">${trs.map(t=>`<option>${esc(t)}</option>`).join("")}</select></label>
   <label>Data<input type="text" id="a-dt" placeholder="séc. V a.C."></label><label>Status<select id="a-st"><option value="Quero">Quero</option><option>Tenho</option><option>Lendo</option><option>Lido</option><option value="">—</option></select></label>
-  <label class="full">Edição<input type="text" id="a-ed" placeholder="Tradutor, editora"></label><label class="full">Por que ler<textarea id="a-why"></textarea></label></div>
+  <label class="full">Edição<input type="text" id="a-ed" placeholder="Tradutor, editora" value="${esc(d.ed||"")}"></label><label class="full">Por que ler<textarea id="a-why"></textarea></label></div>
   <button class="btn wide" data-saveadd>Adicionar à estante</button>`;
 }
+
+/* ---------- ISBN ---------- */
+let ADD={},scan=null,zxingP=null;
+const norm=x=>String(x||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();
+const isIsbn=c=>{c=String(c||"").replace(/\D/g,"");if(!/^97[89]\d{10}$/.test(c))return false;let t=0;for(let i=0;i<12;i++)t+=(+c[i])*(i%2?3:1);return (10-t%10)%10===+c[12]};
+const isbnFrom=v=>{const c=String(v||"").replace(/[^\dXx]/g,"");if(isIsbn(c))return c;
+  if(/^\d{9}[\dXx]$/.test(c)){const b="978"+c.slice(0,9);let t=0;for(let i=0;i<12;i++)t+=(+b[i])*(i%2?3:1);return b+((10-t%10)%10)}return ""};
+const loadZXing=()=>zxingP||(zxingP=new Promise((ok,no)=>{const sc=document.createElement("script");sc.src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js";sc.onload=()=>window.ZXing?ok():no();sc.onerror=no;document.head.appendChild(sc)}));
+function keepDraft(){const g=id=>{const el=$("#"+id);return el?el.value:undefined};["ti","au","ed"].forEach(k=>{const v=g("a-"+k);if(v!==undefined)ADD[k]=v});const i=g("a-isbn");if(i!==undefined)ADD.isbn=i}
+function stopScan(){if(scan){try{scan.stop()}catch(e){}scan=null}const sb=$("#scan");if(sb)sb.hidden=true;const bt=$("[data-scan]");if(bt)bt.hidden=false}
+async function startScan(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)return toast("Este navegador não abre a câmera. Digite o ISBN.");
+  $("#scan").hidden=false;$("[data-scan]").hidden=true;
+  const video=$("#scan-v"),msg=$("#scan-msg");msg.textContent="Abrindo a câmera…";
+  const cam={video:{facingMode:{ideal:"environment"}},audio:false};
+  try{
+    let native=false;
+    if("BarcodeDetector" in window){try{native=(await BarcodeDetector.getSupportedFormats()).includes("ean_13")}catch(e){}}
+    if(native){
+      const stream=await navigator.mediaDevices.getUserMedia(cam);video.srcObject=stream;await video.play();
+      const det=new BarcodeDetector({formats:["ean_13"]});
+      const me={stop:()=>stream.getTracks().forEach(t=>t.stop())};scan=me;
+      const loop=async()=>{if(scan!==me)return;try{const r=await det.detect(video);const c=r.map(x=>x.rawValue).find(isIsbn);if(c)return found(c)}catch(e){}setTimeout(loop,180)};loop();
+    }else{
+      await loadZXing();
+      const hints=new Map([[ZXing.DecodeHintType.POSSIBLE_FORMATS,[ZXing.BarcodeFormat.EAN_13]]]);
+      const reader=new ZXing.BrowserMultiFormatReader(hints,250);
+      const me={stop:()=>reader.reset()};scan=me;
+      await reader.decodeFromConstraints(cam,video,res=>{if(res&&scan===me&&isIsbn(res.getText()))found(res.getText())});
+    }
+    msg.textContent="Aponte para o código de barras atrás do livro.";
+  }catch(e){stopScan();toast(e&&e.name==="NotAllowedError"?"Permita a câmera nas configurações do navegador":"Não consegui abrir a câmera. Digite o ISBN.")}
+}
+function found(code){if(navigator.vibrate)navigator.vibrate(60);stopScan();keepDraft();ADD.isbn=code;lookup(code)}
+async function lookup(isbn){
+  ADD.msg="Buscando "+isbn+"…";renderDetail();
+  let info=null;
+  try{const r=await fetch("https://brasilapi.com.br/api/isbn/v1/"+isbn);if(r.ok){const j=await r.json();if(j.title)info={ti:j.title+(j.subtitle?": "+j.subtitle:""),au:(j.authors||[]).join(", "),ed:[j.publisher,j.year].filter(Boolean).join(", "),capa:j.cover_url||""}}}catch(e){}
+  if(!info){try{const r=await fetch("https://www.googleapis.com/books/v1/volumes?q=isbn:"+isbn);if(r.ok){const j=await r.json();const v=j.items&&j.items[0]&&j.items[0].volumeInfo;
+    if(v)info={ti:v.title+(v.subtitle?": "+v.subtitle:""),au:(v.authors||[]).join(", "),ed:[v.publisher,(v.publishedDate||"").slice(0,4)].filter(Boolean).join(", "),capa:((v.imageLinks||{}).thumbnail||"").replace(/^http:/,"https:")}}}catch(e){}}
+  if(V.open!=="__add")return;
+  if(!info){ADD.msg="Não encontrei esse ISBN nas bases. Preencha à mão.";ADD.match=[];return renderDetail()}
+  Object.assign(ADD,info,{msg:"Encontrado. Confira os campos e salve."});
+  const t=norm(info.ti);
+  ADD.match=CAT.filter(b=>{const n=norm(String(b.ti).split(/[(:;]/)[0]);return n.length>=4&&(t.includes(n)||n.includes(t))}).slice(0,3).map(b=>b.id);
+  renderDetail();
+}
+
 function renderDetail(){$("#sheetIn").innerHTML=detail()}
 function openBook(id){V.open=id;renderDetail();const sh=$("#sheet");sh.classList.add("on");sh.scrollTop=0;setTimeout(()=>{const b=$(".back");if(b)b.focus()},60)}
-function closeBook(){V.open=null;$("#sheet").classList.remove("on")}
+function closeBook(){stopScan();V.open=null;$("#sheet").classList.remove("on")}
 function showText(title,txt){V.open="__txt";$("#sheetIn").innerHTML=`<div class="sh-top"><button class="back" data-close>‹ Voltar</button></div><h2>${esc(title)}</h2><p class="muted">Selecione tudo e copie.</p><textarea style="min-height:60vh">${esc(txt)}</textarea>`;$("#sheet").classList.add("on")}
 
 /* ---------- importar ---------- */
@@ -436,7 +510,7 @@ function render(){
   if(V.tab==="estante"){if(m.dataset.v!=="estante"){m.innerHTML=estanteShell();m.dataset.v="estante";bindEstante()}renderList()}
   else if(V.tab==="notas"){if(m.dataset.v!=="notas"){m.innerHTML=notasShell();m.dataset.v="notas";bindNotas()}renderNotas()}
   else{m.dataset.v=V.tab;m.innerHTML=({inicio,trilhas,compras})[V.tab]()}
-  if(V.open&&V.open!=="__txt"){const a=document.activeElement;if(!$("#sheet").contains(a)||a.tagName==="BUTTON")renderDetail()}
+  if(V.open&&V.open!=="__txt"&&V.open!=="__add"){const a=document.activeElement;if(!$("#sheet").contains(a)||a.tagName==="BUTTON")renderDetail()}
 }
 function bindLogin(){$("#lg-form").onsubmit=e=>{e.preventDefault();const p=$("#lg-pw").value;if(p)login(p)}}
 function go(tab){V.tab=tab;if(V.auth)keepView();if(location.hash!=="#"+tab)location.hash=tab;render();window.scrollTo(0,0)}
@@ -453,7 +527,11 @@ document.addEventListener("click",e=>{
   if("close" in d)return closeBook();
   if(d.shelf){V.shelf=d.shelf;keepView();return render()}
   if(d.gotr){Object.assign(V,{tipo:V.shelf,tr:d.gotr,st:"",pr:"",q:"",sort:"ord"});return go("estante")}
-  if("add" in d)return openBook("__add");
+  if("add" in d){ADD={};return openBook("__add")}
+  if("scan" in d)return startScan();
+  if("scanstop" in d)return stopScan();
+  if("isbnbusca" in d){const c=isbnFrom($("#a-isbn").value);if(!c)return toast("ISBN inválido. Confira os números.");keepDraft();ADD.isbn=c;return lookup(c)}
+  if(d.claim){const id=d.claim,p={status:"Tenho"};if(ADD.ed)p.edicao=ADD.ed;if(ADD.isbn)p.isbn=ADD.isbn;stopScan();setEst(id,p);openBook(id);return toast("Marcado como Tenho")}
   if("logout" in d){if(!t.dataset.sure){t.dataset.sure="1";t.firstChild.textContent="Toque de novo para sair";return}return logout("")}
   if("export" in d){const blob=new Blob([JSON.stringify({app:"biblioteca-antiguidade",exportado:new Date().toISOString(),...S},null,1)],{type:"application/json"});
     const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`biblioteca-backup-${today()}.json`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);return toast("Backup baixado")}
@@ -469,7 +547,7 @@ document.addEventListener("click",e=>{
   if("delbook" in d){if(!t.dataset.sure){t.dataset.sure="1";t.textContent="Toque de novo para remover";return}const id=V.open;closeBook();put("extras",id,null);return toast("Livro removido")}
   if("saveadd" in d){const ti=$("#a-ti").value.trim();if(!ti)return toast("O título é obrigatório");
     const id=newId("X"),st=$("#a-st").value;
-    put("extras",id,{id,tp:$("#a-tp").value,ti,au:$("#a-au").value.trim()||"—",tr:$("#a-tr").value,pr:+$("#a-pr").value,dt:$("#a-dt").value.trim(),ed:$("#a-ed").value.trim(),why:$("#a-why").value.trim(),st0:""});
+    put("extras",id,{id,tp:$("#a-tp").value,ti,au:$("#a-au").value.trim()||"—",tr:$("#a-tr").value,pr:+$("#a-pr").value,dt:$("#a-dt").value.trim(),ed:$("#a-ed").value.trim(),why:$("#a-why").value.trim(),isbn:isbnFrom($("#a-isbn").value)||"",capa:/^https:\/\//.test(ADD.capa||"")?ADD.capa:"",st0:""});
     if(st)setEst(id,{status:st});openBook(id);return toast("Adicionado à estante")}
   if("csv" in d||"copylist" in d){
     let txt;
